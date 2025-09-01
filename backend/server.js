@@ -35,10 +35,5 @@ app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/ai", aiRoutes);
 
-// Root route
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
-
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
