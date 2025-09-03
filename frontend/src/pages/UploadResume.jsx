@@ -154,6 +154,10 @@ function UploadResume() {
     setResumeDetails(null);
   };
 
+  const handleResetATS = () =>{
+    setAtsScore(null);
+  }
+
   return (
     <div className="max-w-2xl mx-auto mt-10 bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-bold mb-4 text-center">

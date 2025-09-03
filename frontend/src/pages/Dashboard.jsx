@@ -1,5 +1,6 @@
 // src/pages/Dashboard.jsx
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   getResumes,
   createResume,
@@ -85,6 +86,8 @@ function Dashboard() {
         >
           + New Resume
         </button>
+
+        <div className="ml-6 mt-12"><Link to="/upload-resume" className='w-full mb-4 bg-yellow-600 text-white py-2 px-12 rounded hover:bg-yellow-700 dark:hover:bg-yellow-500 transition'>Upload Resume</Link></div>
 
         <ul className="space-y-2">
           {resumes.map((resume) => (
