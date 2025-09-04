@@ -56,13 +56,8 @@ function Home() {
           transition={{ delay: 0.9 }}
           className="mt-12"
         >
-          <p className="text-gray-600 dark:text-gray-300 mb-4">Want to check your ATS Score?</p>
-          <Link
-            to="/upload-resume"
-            className="px-6 py-3 bg-green-500 text-white rounded-xl shadow hover:bg-green-600 transition"
-          >
-            📄 Upload Resume
-          </Link>
+          <p className="text-gray-500 dark:text-gray-300 mb-4">Want to check your Resume's ATS Score? <br /> <span className="text-red-400">Go to Dashboard</span></p>
+          
         </motion.div>
       </section>
 
