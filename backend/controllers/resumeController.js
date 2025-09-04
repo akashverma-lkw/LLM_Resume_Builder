@@ -78,24 +78,18 @@ export const analyzeResume = async (req, res) => {
 // UPLOAD & ANALYZE Resume (simplified)
 export const uploadResume = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    // Extract text from uploaded PDF
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const pdfData = await pdfParse(fileBuffer);
+    // PDF Buffer → Text extract
+    const data = await pdfParse(req.file.buffer);
 
-    const resume = new ResumeUpload({
-      user: req.user.id,
-      fileUrl: `/uploads/${req.file.filename}`,
-      extractedText: pdfData.text,
+    // AI ke liye send karne ke liye response
+    res.json({
+      extractedText: data.text,
+      atsScore: null, // baad me AI se calculate karoge
     });
-
-    await resume.save();
-    res.status(201).json(resume);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Error processing resume" });
   }
 };
 

@@ -37,11 +37,11 @@ const resumeSchema = new mongoose.Schema(
     
     fileUrl: {
     type: String,
-    required: true,
+    required: false,
   },
   extractedText: {
     type: String,
-    required: true,
+    required: false,
   },
   },
   { timestamps: true }

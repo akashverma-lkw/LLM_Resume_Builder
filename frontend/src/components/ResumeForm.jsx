@@ -1,5 +1,7 @@
 // src/components/ResumeForm.jsx
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { GraduationCap, Briefcase, Wrench, FolderPlus } from "lucide-react";
 
 function ResumeForm({ onSave, onCancel, initialData }) {
   const [formData, setFormData] = useState({
@@ -12,31 +14,32 @@ function ResumeForm({ onSave, onCancel, initialData }) {
     projects: [{ title: "", description: "", link: "" }],
   });
 
-  // Handle input change for simple fields
+  const [errors, setErrors] = useState({});
+
+  // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" }); // clear error on change
   };
 
-  // Handle dynamic array inputs
+  // Handle dynamic fields
   const handleArrayChange = (index, field, value, key) => {
     const updated = [...formData[key]];
     updated[index][field] = value;
     setFormData({ ...formData, [key]: updated });
   };
 
-  // Add new entry
   const handleAddField = (key, obj) => {
     setFormData({ ...formData, [key]: [...formData[key], obj] });
   };
 
-  // Remove entry
   const handleRemoveField = (key, index) => {
     const updated = [...formData[key]];
     updated.splice(index, 1);
     setFormData({ ...formData, [key]: updated });
   };
 
-  // Preload data if editing
+  // Preload data
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -55,57 +58,100 @@ function ResumeForm({ onSave, onCancel, initialData }) {
     }
   }, [initialData]);
 
+  // Validate form
+  const validate = () => {
+    let newErrors = {};
+    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required.";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Enter a valid email.";
+    }
+    if (formData.phone && !/^\+?[0-9\s-]{7,15}$/.test(formData.phone)) {
+      newErrors.phone = "Enter a valid phone number.";
+    }
+    return newErrors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    onSave({
+      ...formData,
+      extractedText: "",
+      fileUrl: "",
+    });
   };
 
   return (
-    <form
+    <motion.form
       onSubmit={handleSubmit}
-      className="space-y-6 bg-white dark:bg-gray-900 p-6 rounded-lg shadow transition-colors duration-300"
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-8 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700"
     >
-      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
         {initialData ? "Edit Resume" : "Create Resume"}
       </h2>
 
       {/* Basic Info */}
-      <input
-        type="text"
-        name="fullName"
-        placeholder="Full Name"
-        className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-yellow-500"
-        value={formData.fullName}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-yellow-500"
-        value={formData.email}
-        onChange={handleChange}
-        required
-      />
-      <input
-        type="text"
-        name="phone"
-        placeholder="Phone"
-        className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-yellow-500"
-        value={formData.phone}
-        onChange={handleChange}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <input
+            type="text"
+            name="fullName"
+            placeholder="Full Name"
+            className="input-field"
+            value={formData.fullName}
+            onChange={handleChange}
+          />
+          {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName}</p>}
+        </div>
+
+        <div>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="input-field"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+        </div>
+
+        <div>
+          <input
+            type="text"
+            name="phone"
+            placeholder="Phone"
+            className="input-field"
+            value={formData.phone}
+            onChange={handleChange}
+          />
+          {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+        </div>
+      </div>
 
       {/* Education */}
-      <div>
-        <h3 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Education</h3>
+      <SectionCard title="Education" icon={<GraduationCap className="w-5 h-5" />}>
         {formData.education.map((edu, idx) => (
-          <div key={idx} className="space-y-2 mb-2">
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, x: -15 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-2 gap-3 mb-2"
+          >
             <input
               type="text"
               placeholder="Degree"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={edu.degree}
               onChange={(e) =>
                 handleArrayChange(idx, "degree", e.target.value, "education")
@@ -114,7 +160,7 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             <input
               type="text"
               placeholder="Institution"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={edu.institution}
               onChange={(e) =>
                 handleArrayChange(idx, "institution", e.target.value, "education")
@@ -123,7 +169,7 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             <input
               type="text"
               placeholder="Year"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={edu.year}
               onChange={(e) =>
                 handleArrayChange(idx, "year", e.target.value, "education")
@@ -131,32 +177,24 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             />
             <button
               type="button"
-              className="text-red-500 dark:text-red-400 text-sm"
+              className="remove-btn"
               onClick={() => handleRemoveField("education", idx)}
             >
-              Remove
+              ✕
             </button>
-          </div>
+          </motion.div>
         ))}
-        <button
-          type="button"
-          className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-1 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          onClick={() =>
-            handleAddField("education", { degree: "", institution: "", year: "" })
-          }
-        >
-          + Add Education
-        </button>
-      </div>
+        <AddButton onClick={() => handleAddField("education", { degree: "", institution: "", year: "" })} />
+      </SectionCard>
 
       {/* Skills */}
-      <div>
-        <h3 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Skills</h3>
+      <SectionCard title="Skills" icon={<Wrench className="w-5 h-5" />}>
         {formData.skills.map((skill, idx) => (
           <div key={idx} className="flex items-center gap-2 mb-2">
             <input
               type="text"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              placeholder="Skill"
+              className="input-field"
               value={skill}
               onChange={(e) => {
                 const updated = [...formData.skills];
@@ -166,31 +204,29 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             />
             <button
               type="button"
-              className="text-red-500 dark:text-red-400 text-sm"
+              className="remove-btn"
               onClick={() => handleRemoveField("skills", idx)}
             >
               ✕
             </button>
           </div>
         ))}
-        <button
-          type="button"
-          className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-1 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          onClick={() => handleAddField("skills", "")}
-        >
-          + Add Skill
-        </button>
-      </div>
+        <AddButton onClick={() => handleAddField("skills", "")} />
+      </SectionCard>
 
       {/* Experience */}
-      <div>
-        <h3 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Experience</h3>
+      <SectionCard title="Experience" icon={<Briefcase className="w-5 h-5" />}>
         {formData.experience.map((exp, idx) => (
-          <div key={idx} className="space-y-2 mb-2">
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, x: 15 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-2 mb-3"
+          >
             <input
               type="text"
               placeholder="Company"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={exp.company}
               onChange={(e) =>
                 handleArrayChange(idx, "company", e.target.value, "experience")
@@ -199,7 +235,7 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             <input
               type="text"
               placeholder="Role"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={exp.role}
               onChange={(e) =>
                 handleArrayChange(idx, "role", e.target.value, "experience")
@@ -208,7 +244,7 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             <input
               type="text"
               placeholder="Duration"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={exp.duration}
               onChange={(e) =>
                 handleArrayChange(idx, "duration", e.target.value, "experience")
@@ -216,7 +252,7 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             />
             <textarea
               placeholder="Description"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={exp.description}
               onChange={(e) =>
                 handleArrayChange(idx, "description", e.target.value, "experience")
@@ -224,16 +260,14 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             />
             <button
               type="button"
-              className="text-red-500 dark:text-red-400 text-sm"
+              className="remove-btn"
               onClick={() => handleRemoveField("experience", idx)}
             >
-              Remove
+              ✕
             </button>
-          </div>
+          </motion.div>
         ))}
-        <button
-          type="button"
-          className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-1 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+        <AddButton
           onClick={() =>
             handleAddField("experience", {
               company: "",
@@ -242,20 +276,22 @@ function ResumeForm({ onSave, onCancel, initialData }) {
               description: "",
             })
           }
-        >
-          + Add Experience
-        </button>
-      </div>
+        />
+      </SectionCard>
 
       {/* Projects */}
-      <div>
-        <h3 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">Projects</h3>
+      <SectionCard title="Projects" icon={<FolderPlus className="w-5 h-5" />}>
         {formData.projects.map((proj, idx) => (
-          <div key={idx} className="space-y-2 mb-2">
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-2 mb-3"
+          >
             <input
               type="text"
               placeholder="Project Title"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={proj.title}
               onChange={(e) =>
                 handleArrayChange(idx, "title", e.target.value, "projects")
@@ -263,7 +299,7 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             />
             <textarea
               placeholder="Description"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={proj.description}
               onChange={(e) =>
                 handleArrayChange(idx, "description", e.target.value, "projects")
@@ -272,7 +308,7 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             <input
               type="text"
               placeholder="Project Link"
-              className="w-full p-2 border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+              className="input-field"
               value={proj.link}
               onChange={(e) =>
                 handleArrayChange(idx, "link", e.target.value, "projects")
@@ -280,41 +316,50 @@ function ResumeForm({ onSave, onCancel, initialData }) {
             />
             <button
               type="button"
-              className="text-red-500 dark:text-red-400 text-sm"
+              className="remove-btn"
               onClick={() => handleRemoveField("projects", idx)}
             >
-              Remove
+              ✕
             </button>
-          </div>
+          </motion.div>
         ))}
-        <button
-          type="button"
-          className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-1 rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          onClick={() =>
-            handleAddField("projects", { title: "", description: "", link: "" })
-          }
-        >
-          + Add Project
-        </button>
-      </div>
+        <AddButton onClick={() => handleAddField("projects", { title: "", description: "", link: "" })} />
+      </SectionCard>
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded hover:bg-gray-400 dark:hover:bg-gray-600 transition"
-        >
+        <button type="button" onClick={onCancel} className="btn-secondary">
           Cancel
         </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-400 transition"
-        >
+        <button type="submit" className="btn-primary">
           {initialData ? "Update Resume" : "Save Resume"}
         </button>
       </div>
-    </form>
+    </motion.form>
+  );
+}
+
+/* --- Reusable Components --- */
+function SectionCard({ title, icon, children }) {
+  return (
+    <div className="p-4 border rounded-xl shadow-sm bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <h3 className="flex items-center gap-2 font-semibold mb-3 text-gray-900 dark:text-gray-100">
+        {icon} {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
+function AddButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mt-2 px-3 py-1 text-sm rounded bg-yellow-500 hover:bg-yellow-600 text-white transition"
+    >
+      + Add
+    </button>
   );
 }
 

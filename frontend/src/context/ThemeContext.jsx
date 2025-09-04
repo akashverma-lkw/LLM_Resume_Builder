@@ -4,20 +4,26 @@ import { createContext, useEffect, useState } from "react";
 export const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("darkMode");
+    if (saved !== null) return saved === "true";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
-  // Load saved theme
   useEffect(() => {
-    const saved = localStorage.getItem("darkMode") === "true";
-    setDarkMode(saved);
-    if (saved) document.documentElement.classList.add("dark");
-  }, []);
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []); 
 
   const toggleTheme = () => {
-    setDarkMode(!darkMode);
-    localStorage.setItem("darkMode", !darkMode);
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem("darkMode", newMode);
 
-    if (!darkMode) {
+    if (newMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
@@ -26,7 +32,9 @@ export function ThemeProvider({ children }) {
 
   return (
     <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
-      {children}
+      <div className="transition-colors duration-300 min-h-screen">
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 }

@@ -7,6 +7,8 @@ import {
   generateAnalytics,
 } from "../utils/api";
 import ReactMarkdown from "react-markdown";
+import { motion } from "framer-motion";
+import { FileText, FileSignature, BadgeCheck, BarChart3 } from "lucide-react";
 
 function AISection({ resume }) {
   const [aiOutput, setAiOutput] = useState("");
@@ -53,62 +55,86 @@ function AISection({ resume }) {
         setAiOutput(response.analytics);
       }
     } catch (err) {
-      setAiOutput("Error: " + err.message);
+      setAiOutput("❌ Error: " + err.message);
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 shadow rounded transition-colors duration-300">
-      <h2 className="text-xl font-bold mb-4 text-yellow-700 dark:text-yellow-400">
-        AI-Powered Tools 🤖
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="mt-6 p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700"
+    >
+      <h2 className="text-2xl font-bold mb-4 text-yellow-700 dark:text-yellow-400 flex justify-center items-center gap-2">
+        AI-Powered Tools
       </h2>
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <button
+      {/* Action Buttons */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <AIButton
+          icon={<FileText className="w-5 h-5" />}
+          label="Generate Summary"
+          color="bg-yellow-600 hover:bg-yellow-700 dark:hover:bg-yellow-500"
           onClick={() => handleAIRequest("summary")}
-          className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 dark:hover:bg-yellow-500"
-        >
-          Generate Summary
-        </button>
-        <button
+        />
+        <AIButton
+          icon={<FileSignature className="w-5 h-5" />}
+          label="Generate Cover Letter"
+          color="bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500"
           onClick={() => handleAIRequest("cover")}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-500"
-        >
-          Generate Cover Letter
-        </button>
-        <button
+        />
+        <AIButton
+          icon={<BadgeCheck className="w-5 h-5" />}
+          label="ATS Score"
+          color="bg-green-600 hover:bg-green-700 dark:hover:bg-green-500"
           onClick={() => handleAIRequest("ats")}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 dark:hover:bg-green-500"
-        >
-          ATS Score
-        </button>
-        <button
+        />
+        <AIButton
+          icon={<BarChart3 className="w-5 h-5" />}
+          label="Resume Analytics"
+          color="bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-500"
           onClick={() => handleAIRequest("analytics")}
-          className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 dark:hover:bg-purple-500"
-        >
-          Resume Analytics
-        </button>
+        />
       </div>
 
+      {/* AI Output */}
       {loading ? (
-        <p className="text-gray-500 dark:text-gray-400">⏳ AI is generating...</p>
+        <div className="flex justify-center py-6">
+          <div className="w-6 h-6 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
       ) : (
         aiOutput && (
-          <div className="bg-white dark:bg-gray-900 p-4 rounded shadow border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl shadow border border-gray-200 dark:border-gray-700"
+          >
             <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">
-              AI Output:
+              📄 AI Output
             </h3>
-            <div className="prose dark:prose-invert max-w-none">
+            <div className="prose dark:prose-invert max-w-none text-sm">
               <ReactMarkdown>{aiOutput}</ReactMarkdown>
             </div>
-          </div>
-
-
+          </motion.div>
         )
       )}
-    </div>
+    </motion.div>
+  );
+}
+
+/* --- Reusable Button --- */
+function AIButton({ icon, label, color, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white font-medium shadow-md transition ${color}`}
+    >
+      {icon} {label}
+    </button>
   );
 }
 
